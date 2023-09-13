@@ -1,7 +1,9 @@
 [package]
 name = "trackr"
+description = "Track changes on a struct as bitflags"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [dev-dependencies]
 trybuild = { version = "1", features = ["diff"] }
