@@ -4,6 +4,7 @@ description = "Derive macro for trackr"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
+repository = "https://github.com/jon-zu/trackr"
 
 [lib]
 proc-macro = true
@@ -13,7 +14,6 @@ proc-macro = true
 [dependencies]
 syn = { version = "2", features=["extra-traits", "parsing"]}
 quote = "1"
-anyhow = "1"
 darling = "0.20"
 proc-macro2 = "1"
 either = "1"
