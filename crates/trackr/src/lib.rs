@@ -3,13 +3,13 @@ use std::ops::{Deref, DerefMut};
 /// A tracked field in a tracked struct
 /// which sets a flag when the value is changed.
 #[derive(Debug)]
-pub struct TrackedFieldMut<'s, T, F> {
+pub struct TrackedField<'s, T, F> {
     flag: F,
     value: &'s mut T,
     track_flags: &'s mut F,
 }
 
-impl<'s, T, F> TrackedFieldMut<'s, T, F>
+impl<'s, T, F> TrackedField<'s, T, F>
 where
     F: bitflags::Flags + Clone,
 {
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<'s, T, F> TrackedFieldMut<'s, T, F>
+impl<'s, T, F> TrackedField<'s, T, F>
 where
     T: PartialEq,
     F: bitflags::Flags + Clone,
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<'s, T, F> Deref for TrackedFieldMut<'s, T, F> {
+impl<'s, T, F> Deref for TrackedField<'s, T, F> {
     type Target = T;
 
     /// Deref the Field value
@@ -71,7 +71,7 @@ impl<'s, T, F> Deref for TrackedFieldMut<'s, T, F> {
     }
 }
 
-impl<'s, T, F> DerefMut for TrackedFieldMut<'s, T, F>
+impl<'s, T, F> DerefMut for TrackedField<'s, T, F>
 where
     F: bitflags::Flags + Clone,
 {

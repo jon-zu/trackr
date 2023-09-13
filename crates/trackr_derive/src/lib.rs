@@ -62,8 +62,8 @@ impl TrackedField {
                 &self.#ident
             }
 
-            #vis fn #get_mut(&mut self) -> trackr::TrackedFieldMut<'_, #ty, #flag_ty> {
-                trackr::TrackedFieldMut::new(
+            #vis fn #get_mut(&mut self) -> trackr::TrackedField<'_, #ty, #flag_ty> {
+                trackr::TrackedField::new(
                     #flag_ty::#ident,
                     &mut self.#ident,
                     &mut self.#tracker_field
