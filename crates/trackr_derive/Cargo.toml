@@ -1,7 +1,9 @@
 [package]
 name = "trackr_derive"
+description = "Derive macro for trackr"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
 
 [lib]
 proc-macro = true
