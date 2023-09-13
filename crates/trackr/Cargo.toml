@@ -1,0 +1,18 @@
+[package]
+name = "trackr"
+version = "0.1.0"
+edition = "2021"
+
+[dev-dependencies]
+trybuild = { version = "1", features = ["diff"] }
+bitflags = "2"
+
+[[test]]
+name = "tests"
+path = "tests/progress.rs"
+
+
+[dependencies]
+bitflags = "2"
+trackr_derive = { version = "0.1.0", path = "../trackr_derive" }
+
