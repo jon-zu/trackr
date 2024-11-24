@@ -50,11 +50,14 @@ where
 
     /// Update with an option closure, only sets the flag is Some is returned
     /// useful for checked updates
-    pub fn update_opt(&mut self, f: impl FnOnce(&mut T) -> Option<T>) {
+    /// Returns true if the value was updated
+    pub fn update_opt(&mut self, f: impl FnOnce(&mut T) -> Option<T>) -> bool {
         if let Some(new) = f(self.value) {
             *self.value = new;
             self.set_flag();
+            return true;
         }
+        false
     }
 }
 
