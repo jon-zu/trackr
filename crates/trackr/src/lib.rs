@@ -35,9 +35,12 @@ where
 
     /// Updates the value via a closure
     /// It should return true if the value has changed.
-    pub fn update(&mut self, f: impl FnOnce(&mut T) -> bool) {
+    pub fn update(&mut self, f: impl FnOnce(&mut T) -> bool) -> bool {
         if f(self.value) {
             self.set_flag();
+            true
+        } else {
+            false
         }
     }
 
@@ -46,7 +49,6 @@ where
         f(self.value);
         self.set_flag();
     }
-
 
     /// Update with an option closure, only sets the flag is Some is returned
     /// useful for checked updates
