@@ -1,7 +1,10 @@
 # Trackr
 
-Simple derive-based approach to track modifications of a 
-structure in a flag set, which is provided by the `bitflags` create
+Simple derive-based approach to track modifications in a bitflag set, so each time a field is modified the corresponding flag is set.
+
+## Notes
+
+The crate is limited to a maximum of 128 fields per struct for now.
 
 ## Example:
 
@@ -27,8 +30,6 @@ pub struct Sample {
 
 ## Usage
 
-Tracked fields are accesible via the `'field'_mut()`, which yields a `TrackedField` struct, which
-holds a mutable reference to the field and the flag and offers mutable ways to update the value
-and setting the changed flag in the background. The un-forced like `set` operations check If the value was changed,
-thus requiring `PartialEq` implemented for the type. However there are also forced variants like `forced_set` which 
-set the changed flag regard.
+Tracked fields are accesible via the `'field'_mut()` returning a `TrackedField<T>` struct, holding a mutable reference to the field and offering multiple functions to update the field. The un-forced like `set` operations checks If the value was changed,
+but requiring `PartialEq` for the type. There are also forced variants like `forced_set` which 
+sets the flag even If the original value was not changed.

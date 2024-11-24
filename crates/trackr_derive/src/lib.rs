@@ -82,7 +82,7 @@ fn bits_ty(n: usize) -> syn::Type {
         n if n < 32 + 1 => syn::parse_quote!(u32),
         n if n < 64 + 1 => syn::parse_quote!(u64),
         n if n < 128 + 1 => syn::parse_quote!(u128),
-        _ => panic!("Too many tracked fields, max is 128"),
+        _ => panic!("Too many tracked fields, maximum is 128"),
     }
 }
 
@@ -111,7 +111,7 @@ impl ToTokens for Tracked {
         let bits_ty = bits_ty(tracked_fields.clone().count());
 
         // Auto generate all flags
-        let flag_ty = format_ident!("{}Flags", ident);
+        let flag_ty = format_ident!("{ident}Flags");
         let flags = tracked_fields.clone().enumerate().map(|(i, field)| {
             let ident = field.ident.as_ref().unwrap();
             quote!( const #ident = 1 << #i; )
@@ -132,9 +132,16 @@ impl ToTokens for Tracked {
 
             impl #imp #ident #ty #wher {
                 #( #field_impls)*
+            }
 
-                #vis fn flags(&self) -> #flag_ty {
+            impl trackr::TrackedStruct for #ident #ty #wher {
+                type Flags = #flag_ty;
+                fn flags(&self) -> Self::Flags {
                     self.#tracker_field_id
+                }
+
+                fn flags_mut(&mut self) -> &mut Self::Flags {
+                    &mut self.#tracker_field_id
                 }
             }
         )

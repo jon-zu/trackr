@@ -1,3 +1,6 @@
+
+use trackr::TrackedStruct;
+
 mod data {
     use trackr::Tracked;
 
@@ -10,7 +13,7 @@ mod data {
         b: String,
         pub c: Vec<usize>,
         #[track(skip)]
-        pub d: u32,
+        pub _d: u32,
     }
 
     impl A {
@@ -22,7 +25,7 @@ mod data {
 
 mod other {
     use super::data::A;
-    // a works, but is private
+    // a is accesible through the field fn, but is private
     pub fn try_access_a(a: &mut A) {
         a.a_mut().set(2);
         assert_eq!(*a.a(), 2);
@@ -40,4 +43,9 @@ fn main() {
     a.proxy_b_set();
     a.c_mut().force_update(|c| c.push(1));
     assert_eq!(a.flags(), AFlags::all());
+
+
+    let updates = a.take_updates();
+    assert_eq!(updates, Some(AFlags::a | AFlags::b | AFlags::c));
+    assert!(a.take_updates().is_none());
 }

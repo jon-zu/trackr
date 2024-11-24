@@ -83,5 +83,22 @@ where
     }
 }
 
+pub trait TrackedStruct {
+    type Flags: bitflags::Flags;
+
+    fn flags(&self) -> Self::Flags;
+    fn flags_mut(&mut self) -> &mut Self::Flags;
+
+    /// Returns None if no flags are set, otherwise resets the flags and returns them
+    fn take_updates(&mut self) -> Option<Self::Flags> {
+        let flags = std::mem::replace(self.flags_mut(), <Self::Flags as bitflags::Flags>::empty());
+        if flags.is_empty() {
+            None
+        } else {
+            Some(flags)
+        }
+    }
+}
+
 pub use bitflags::*;
 pub use trackr_derive::*;
