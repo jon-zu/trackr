@@ -46,6 +46,16 @@ where
         f(self.value);
         self.set_flag();
     }
+
+
+    /// Update with an option closure, only sets the flag is Some is returned
+    /// useful for checked updates
+    pub fn update_opt(&mut self, f: impl FnOnce(&mut T) -> Option<T>) {
+        if let Some(new) = f(self.value) {
+            *self.value = new;
+            self.set_flag();
+        }
+    }
 }
 
 impl<'s, T, F> TrackedField<'s, T, F>

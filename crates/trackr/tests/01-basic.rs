@@ -39,6 +39,9 @@ fn main() {
     assert!(a.flags().is_empty());
     other::try_access_a(&mut a);
     *a.a_mut() += 2;
+    assert_eq!(a.a(), &4);
+    a.a_mut().update_opt(|a| a.checked_sub(5));
+    assert_eq!(a.a(), &4);
     assert_eq!(a.flags(), AFlags::a);
     a.proxy_b_set();
     a.c_mut().force_update(|c| c.push(1));
