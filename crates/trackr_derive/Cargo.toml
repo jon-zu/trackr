@@ -1,7 +1,7 @@
 [package]
 name = "trackr_derive"
 description = "Derive macro for trackr"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/jon-zu/trackr"
