@@ -1,12 +1,13 @@
-use std::ops::{Deref, DerefMut};
+use std::ops::{AddAssign, Deref, DerefMut};
+use bitflags::Flags;
 
 /// A tracked field in a tracked struct
 /// which sets a flag when the value is changed.
 #[derive(Debug)]
 pub struct TrackedField<'s, T, F> {
     flag: F,
-    value: &'s mut T,
     track_flags: &'s mut F,
+    value: &'s mut T,
 }
 
 impl<'s, T, F> TrackedField<'s, T, F>
@@ -14,7 +15,7 @@ where
     F: bitflags::Flags + Clone,
 {
     /// Create a new tracked field
-    pub fn new(flag: F, value: &'s mut T, track_flags: &'s mut F) -> Self {
+    pub fn new(flag: F, track_flags: &'s mut F, value: &'s mut T) -> Self {
         Self {
             flag,
             track_flags,
@@ -63,7 +64,7 @@ where
     }
 }
 
-impl<'s, T, F> TrackedField<'s, T, F>
+impl<T, F> TrackedField<'_, T, F>
 where
     T: PartialEq,
     F: bitflags::Flags + Clone,
@@ -77,7 +78,7 @@ where
     }
 }
 
-impl<'s, T, F> Deref for TrackedField<'s, T, F> {
+impl<T, F> Deref for TrackedField<'_, T, F> {
     type Target = T;
 
     /// Deref the Field value
@@ -86,7 +87,7 @@ impl<'s, T, F> Deref for TrackedField<'s, T, F> {
     }
 }
 
-impl<'s, T, F> DerefMut for TrackedField<'s, T, F>
+impl<T, F> DerefMut for TrackedField<'_, T, F>
 where
     F: bitflags::Flags + Clone,
 {
@@ -97,6 +98,18 @@ where
         self.value
     }
 }
+
+impl<T, F> AddAssign<T> for TrackedField<'_, T, F>
+where
+    T: AddAssign<T>,
+    F: bitflags::Flags + Clone,
+{
+    fn add_assign(&mut self, rhs: T) {
+        self.force_update(|v| v.add_assign(rhs));
+    }
+}
+
+
 
 pub trait TrackedStruct {
     type Flags: bitflags::Flags;
@@ -115,5 +128,9 @@ pub trait TrackedStruct {
     }
 }
 
-pub use bitflags::*;
+
+#[doc(hidden)]
+pub mod __reexport {
+    pub use bitflags::*;
+}
 pub use trackr_derive::*;

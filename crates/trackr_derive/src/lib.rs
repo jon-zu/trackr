@@ -4,7 +4,7 @@ use quote::{format_ident, quote, ToTokens};
 use syn::{Ident, Type, Visibility};
 
 #[derive(Debug, FromDeriveInput)]
-#[darling(attributes(pkt), supports(struct_any))]
+#[darling(supports(struct_any))]
 struct Tracked {
     ident: Ident,
     data: ast::Data<util::Ignored, TrackedField>,
@@ -65,8 +65,8 @@ impl TrackedField {
             #vis fn #get_mut(&mut self) -> trackr::TrackedField<'_, #ty, #flag_ty> {
                 trackr::TrackedField::new(
                     #flag_ty::#ident,
-                    &mut self.#ident,
-                    &mut self.#tracker_field
+                    &mut self.#tracker_field,
+                    &mut self.#ident
                 )
             }
 
@@ -122,7 +122,7 @@ impl ToTokens for Tracked {
             .map(|field| field.gen_impl(&field.vis, &flag_ty, tracker_field_id));
 
         quote!(
-            trackr::bitflags! {
+            trackr::__reexport::bitflags! {
                 #[repr(transparent)]
                 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
                 #vis struct #flag_ty: #bits_ty {
@@ -157,6 +157,64 @@ pub fn tracked(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
         Ok(input) => input,
         Err(err) => return err.write_errors().into(),
     };
+    // Validate before generating tokens so we can emit nice span errors instead of panicking.
+    let fields = match input.data.as_ref().take_struct() {
+        Some(f) => f,
+        None => {
+            return syn::Error::new_spanned(
+                &derive_input.ident,
+                "#[derive(Tracked)] only supports structs",
+            )
+            .to_compile_error()
+            .into();
+        }
+    };
+
+    // Collect all flag fields (#[track(flag)])
+    let flag_fields: Vec<_> = fields.iter().filter(|f| f.flag).collect();
+    if flag_fields.is_empty() {
+        return syn::Error::new_spanned(
+            &derive_input.ident,
+            "missing a field marked with #[track(flag)]",
+        )
+        .to_compile_error()
+        .into();
+    }
+    if flag_fields.len() > 1 {
+        // Combine errors for each additional flag field to give user precise spans.
+        let mut err = syn::Error::new_spanned(
+            flag_fields[0]
+                .ident
+                .as_ref()
+                .expect("darling guarantees named field"),
+            "multiple #[track(flag)] fields found (first)",
+        );
+        for extra in &flag_fields[1..] {
+            if let Some(id) = &extra.ident {
+                err.combine(syn::Error::new_spanned(id, "additional #[track(flag)] field here"));
+            }
+        }
+        return err.to_compile_error().into();
+    }
+
+    // Count tracked (non-skip, non-flag) fields to ensure we stay within supported bit width.
+    let tracked_count = fields.iter().filter(|f| f.is_tracked()).count();
+    if tracked_count > 128 {
+        // Use the single flag field's span (or struct ident) for the error anchor.
+        let span_anchor = flag_fields[0]
+            .ident
+            .as_ref()
+            .map(|i| i.span())
+            .unwrap_or(derive_input.ident.span());
+        return syn::Error::new(
+            span_anchor,
+            format!(
+                "too many tracked fields: {tracked_count} (maximum supported is 128)"
+            ),
+        )
+        .to_compile_error()
+        .into();
+    }
 
     input.to_token_stream().into()
 }

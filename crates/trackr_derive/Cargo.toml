@@ -14,6 +14,6 @@ proc-macro = true
 [dependencies]
 syn = { version = "2", features=["extra-traits", "parsing"]}
 quote = "1"
-darling = "0.20"
+darling = "0.21"
 proc-macro2 = "1"
 either = "1"
